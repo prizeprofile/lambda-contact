@@ -11,6 +11,7 @@ Sends an email to env configurable recepients via SES.
 * `MESSAGE_MIN_LENGTH` is a number.
 * `CC_RECIPIENTS` is a comma separated list of email addresses.
 * `TO_RECIPIENTS` is a comma separated list of email addresses.
+* `SOURCE_EMAIL` is the email under which the message is resent.
 
 ## Request
 

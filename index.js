@@ -25,31 +25,29 @@ exports.handler = (event, _, callback) => {
 
       return fields
     })
-    .then(({ email, name, message }) => {
-      // Prepares the email.
-      const params = {
-        Destination: {
-          CcAddresses: process.env.CC_RECIPIENTS.split(','),
-          ToAddresses: process.env.TO_RECIPIENTS.split(',')
-        },
-        Source: email,
-        Template: 'CONTACT',
-        TemplateData: `{
-          \"email\":\"${email}\",
-          \"name\":\"${name}\",
-          \"message\":\"${message}\"
-        }`,
-        ReplyToAddresses: [ email ]
-      }
+    .then(async ({ email, name, message }) => {
+      try {
+        // Prepares the email.
+        const params = {
+          Destination: {
+            CcAddresses: process.env.CC_RECIPIENTS.split(','),
+            ToAddresses: process.env.TO_RECIPIENTS.split(',')
+          },
+          Source: process.env.SOURCE_EMAIL,
+          Template: 'CONTACT',
+          TemplateData: JSON.stringify({ email, name, message }),
+          ReplyToAddresses: [ email ]
+        }
 
-      // Sends email and awaits the response.
-      return new AWS.SES({ apiVersion: '2010-12-01' })
-        .sendTemplatedEmail(params)
-        .promise()
-        .catch(() => ({
+        await new AWS.SES({ apiVersion: '2010-12-01' })
+          .sendTemplatedEmail(params)
+          .promise()
+      } catch (_) {
+        throw {
           status: 503,
           error: 'ServiceUnavailable'
-        }))
+        }
+      }
     })
     .then(() => callback(null, {
       statusCode: 200,
